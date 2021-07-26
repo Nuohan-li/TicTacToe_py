@@ -98,7 +98,6 @@ def game_loop():
                         player *= -1
                         if check_win() == 1 or check_win() == 2:
                             game_over = True
-
         pygame.display.update()
 
 
