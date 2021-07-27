@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 
 pygame.init()
@@ -9,6 +11,14 @@ board = [
     [0, 0, 0],
     [0, 0, 0]
 ]
+
+
+def message(string, string2):
+    msg = pygame.font.SysFont(None, 20).render(string, True, (255, 0, 0))
+    msg2 = pygame.font.SysFont(None, 20).render(string2, True, (255, 0, 0))
+    display.fill((0, 0, 0))
+    display.blit(msg, [100, 150])
+    display.blit(msg2, [40, 180])
 
 
 def draw_grid():
@@ -45,46 +55,84 @@ def draw_marks():
 
 
 def check_win():
-    # y_position is the current position of the elements in the column, the list within the board list
-    y_position = 0
-    for x in board:
-        # columns
-        if sum(x) == 3:
-            return 1
-        if sum(x) == -3:
-            return 2
+    # column:
+    if board[0][0] + board[1][0] + board[2][0] == 3:
+        return 1
+    if board[0][0] + board[1][0] + board[2][0] == -3:
+        return 2
+    if board[0][1] + board[1][1] + board[2][1] == 3:
+        return 1
+    if board[0][1] + board[1][1] + board[2][1] == -3:
+        return 2
+    if board[0][2] + board[1][2] + board[2][2] == 3:
+        return 1
+    if board[0][2] + board[1][2] + board[2][2] == -3:
+        return 2
 
-        # rows
-        if board[0][y_position] + board[1][y_position] + board[1][y_position] == 3:
-            return 1
-        if board[0][y_position] + board[1][y_position] + board[1][y_position] == -3:
-            return 2
-        y_position += 1
+    # rows
+    if board[0][0] + board[0][1] + board[0][2] == 3:
+        return 1
+    if board[0][0] + board[0][1] + board[0][2] == -3:
+        return 2
+    if board[1][0] + board[1][1] + board[1][2] == 3:
+        return 1
+    if board[1][0] + board[1][1] + board[1][2] == -3:
+        return 2
+    if board[2][0] + board[2][1] + board[2][2] == 3:
+        return 1
+    if board[1][0] + board[1][1] + board[1][2] == -3:
+        return 2
 
-        # diagonal
+    # diagonal
     if board[0][0] + board[1][1] + board[2][2] == 3 or board[2][0] + board[1][1] + board[0][2] == 3:
         return 1
     if board[0][0] + board[1][1] + board[2][2] == -3 or board[2][0] + board[1][1] + board[0][2] == -3:
         return 2
 
+    if board[0][0] != 0 and board[0][1] != 0 and board[0][2] != 0 and board[1][0] != 0 \
+            and board[1][1] != 0 and board[1][2] != 0 and board[2][0] != 0 and board[2][1] != 0 and board[2][2] != 0:
+        return 3
+
 
 def game_loop():
+    global board
     player = 1
     run = True
-    mouse_clicked = False
     game_over = False
     while run:
+
+        # if the game is over, user will have choice to whether continue playing or quit
+        while game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                    # run = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        game_over = False
+                        run = False
+
+                    # if user chooses to continue playing, then all the important variables will be reset
+                    # game loop will be rerun
+                    if event.key == pygame.K_p:
+                        display.fill((0, 0, 0))
+                        board = [
+                            [0, 0, 0],
+                            [0, 0, 0],
+                            [0, 0, 0]
+                        ]
+                        pygame.event.clear()
+                        game_loop()
+                        game_over = False
 
         draw_grid()
         draw_marks()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                sys.exit()
+
             if not game_over:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_clicked = True
                 if event.type == pygame.MOUSEBUTTONUP:
-                    mouse_clicked = False
                     # getting the x and y coordinate of the place where mouse click event happened
                     pos = pygame.mouse.get_pos()
                     x = pos[0] // 100
@@ -96,8 +144,16 @@ def game_loop():
                     if board[x][y] == 0:  # beginning of the game
                         board[x][y] = player
                         player *= -1
-                        if check_win() == 1 or check_win() == 2:
-                            game_over = True
+
+                    if check_win() == 1 or check_win() == 2 or check_win() == 3:
+                        if check_win() == 1:
+                            message("Player 1 win", "press P to play again or press q to quit")
+                        if check_win() == 2:
+                            message("Player 2 win", "press P to play again or press q to quit")
+                        if check_win() == 3:
+                            message("It is a tie", "press P to play again or press q to quit")
+                        game_over = True
+
         pygame.display.update()
 
 
